@@ -1,0 +1,6 @@
+﻿.pnpm-store/
+app/node_modules/
+app/dist/
+app/dev-dist/
+app/analysis/
+*.log

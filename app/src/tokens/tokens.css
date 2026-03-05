@@ -1,0 +1,105 @@
+:root {
+  /* Extracted from design/movie.pen */
+  --color-bg-primary: #ffffff;
+  --color-bg-subtle: #f4f4f5;
+  --color-bg-soft: #f5f5f7;
+  --color-bg-overlay: #f5f5f7e6;
+  --color-bg-inverse: #000000;
+
+  --color-text-primary: #000000;
+  --color-text-secondary: #71717a;
+  --color-text-tertiary: #a1a1aa;
+  --color-text-inverse: #ffffff;
+
+  --color-border-subtle: #d4d4d8;
+  --color-border-soft: #e4e4e7;
+  --color-border-overlay: #ffffff66;
+
+  --font-family-body: 'SF Pro Text', 'PingFang SC', -apple-system, BlinkMacSystemFont,
+    'Hiragino Sans GB', 'Helvetica Neue', Arial, sans-serif;
+  --font-family-display: 'Outfit', 'SF Pro Display', 'PingFang SC', -apple-system,
+    BlinkMacSystemFont, 'Hiragino Sans GB', 'Helvetica Neue', Arial, sans-serif;
+  --font-family-number: 'Outfit', 'SF Pro Display', 'PingFang SC', -apple-system,
+    BlinkMacSystemFont, 'Hiragino Sans GB', 'Helvetica Neue', Arial, sans-serif;
+
+  --font-size-8: 8px;
+  --font-size-10: 10px;
+  --font-size-11: 11px;
+  --font-size-12: 12px;
+  --font-size-13: 13px;
+  --font-size-14: 14px;
+  --font-size-16: 16px;
+  --font-size-18: 18px;
+  --font-size-22: 22px;
+  --font-size-24: 24px;
+  --font-size-30: 30px;
+  --font-size-38: 38px;
+  --font-size-44: 44px;
+  --font-size-88: 88px;
+
+  --font-weight-light: 300;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  --line-height-compact: 0.85;
+  --line-height-snug: 0.9;
+  --line-height-tight: 0.95;
+  --line-height-normal: 1;
+  --line-height-relaxed: 1.5;
+
+  --letter-spacing-tightest: -4px;
+  --letter-spacing-tight: -1px;
+  --letter-spacing-snug: -0.5px;
+  --letter-spacing-wide: 1px;
+  --letter-spacing-wider: 2px;
+
+  --space-0: 0px;
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-28: 28px;
+  --space-68: 68px;
+
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-9: 9px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-18: 18px;
+  --radius-21: 21px;
+  --radius-24: 24px;
+  --radius-36: 36px;
+  --radius-round: 999px;
+
+  --shadow-elev-1: 0 0 8px #00000014;
+  --shadow-elev-2: 0 0 10px #00000052;
+
+  --stroke-width-default: 2px;
+  --stroke-color-overlay: #ffffff66;
+
+  /* App aliases */
+  --app-bg: var(--color-bg-soft);
+  --app-surface: var(--color-bg-primary);
+  --app-text: var(--color-text-primary);
+  --app-muted: var(--color-text-secondary);
+  --app-border: var(--color-border-soft);
+  --app-primary: #111111;
+  --font-sans: var(--font-family-body);
+  --radius-3: var(--radius-12);
+  --radius-4: var(--radius-16);
+  --shadow-soft: 0 8px 24px #00000014;
+}
