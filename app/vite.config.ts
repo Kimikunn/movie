@@ -33,8 +33,54 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,ico,json}'],
         runtimeCaching: [
           {
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'app-shell-cache',
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 7 * 24 * 60 * 60,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: ({ request, sameOrigin }) =>
+              sameOrigin && ['script', 'style', 'font', 'worker'].includes(request.destination),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'static-assets-cache',
+              expiration: {
+                maxEntries: 80,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: ({ request, url }) =>
+              request.destination === 'image' || url.hostname === 'images.unsplash.com',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'image-cache',
+              expiration: {
+                maxEntries: 120,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
             // Replace this with your production API origin when backend is ready.
-            urlPattern: /^https:\/\/api\./i,
+            urlPattern: ({ url, sameOrigin }) =>
+              /^https:\/\/api\./i.test(url.href) || (sameOrigin && url.pathname.startsWith('/api/')),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',

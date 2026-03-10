@@ -1,45 +1,32 @@
-﻿import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { IonIcon } from '@ionic/react'
 import { chevronForwardOutline, closeOutline, searchOutline } from 'ionicons/icons'
 import { Link, useSearchParams } from 'react-router-dom'
-
-const results = [
-  {
-    id: 'dune-2',
-    title: '沙丘 2',
-    meta: 'Dune: Part Two · 2024 · 美国',
-    posterTone: 'dark',
-  },
-  {
-    id: 'anatomy-of-a-fall',
-    title: '坠落的审判',
-    meta: 'Anatomy of a Fall · 2023 · 法国',
-    posterTone: 'mid',
-  },
-  {
-    id: 'robot-dreams',
-    title: '机器人之梦',
-    meta: 'Robot Dreams · 2023 · 西班牙',
-    posterTone: 'dark',
-  },
-]
+import PageState from '../components/PageState'
+import { fetchSearchMedia, getPosterTone, resolveMockScenario } from '../data/mockMediaApi'
+import { useAsyncData } from '../hooks/useAsyncData'
+import { useOfflineStatus } from '../hooks/useOfflineStatus'
 
 const recentSearches = ['沙丘 2', '坠落的审判', '机器人之梦']
 
-const ProfilePage = () => {
+const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const from = (searchParams.get('from') ?? '').trim()
   const sourceMovieId = (searchParams.get('movie') ?? '').trim()
+  const scenario = resolveMockScenario(searchParams.get('mock'))
+  const isOfflineMode = useOfflineStatus(scenario === 'offline')
   const contextParams: Record<string, string> = from === 'detail' ? { from: 'detail', movie: sourceMovieId || 'dune-2' } : {}
   const keywordFromParam = (searchParams.get('q') ?? '').trim()
   const activeKeyword = keywordFromParam || '沙丘'
   const isInitialMode = searchParams.get('mode') === 'initial' && !keywordFromParam
   const [searchText, setSearchText] = useState(keywordFromParam)
-  const visibleResults = keywordFromParam
-    ? results.filter((item) => item.title.includes(keywordFromParam) || item.meta.includes(keywordFromParam))
-    : results
-  const hasNoResult = !isInitialMode && visibleResults.length === 0
+  const loadSearchResult = useCallback(() => fetchSearchMedia(keywordFromParam, scenario), [keywordFromParam, scenario])
+  const { data: searchResult, loading, error, reload } = useAsyncData(`search:${scenario}:${keywordFromParam}`, loadSearchResult, {
+    enabled: !isInitialMode,
+  })
+  const visibleResults = keywordFromParam ? (searchResult?.items ?? []) : (searchResult?.items ?? []).slice(0, 3)
+  const hasNoResult = !isInitialMode && !loading && !error && visibleResults.length === 0
 
   useEffect(() => {
     setSearchText(keywordFromParam)
@@ -94,6 +81,8 @@ const ProfilePage = () => {
         ) : null}
       </form>
 
+      {isOfflineMode ? <p className="page-inline-notice">当前离线，仅可查看已缓存的搜索结果；新关键词可能暂时无法获取。</p> : null}
+
       {isInitialMode ? (
         <div className="search-state search-state-idle">
           <p>输入片名开始搜索</p>
@@ -106,7 +95,12 @@ const ProfilePage = () => {
       )}
 
       <p className="result-head">{isInitialMode ? '最近搜索' : '搜索结果'}</p>
-      {isInitialMode ? (
+
+      {loading ? (
+        <PageState tone="loading" title="正在搜索" description={keywordFromParam ? `正在检索“${keywordFromParam}”` : '正在准备搜索内容。'} />
+      ) : error ? (
+        <PageState tone="error" title="搜索失败" description={error} actionLabel="重试" onAction={reload} />
+      ) : isInitialMode ? (
         <div className="recent-list">
           <div className="recent-chip-row">
             {recentSearches.map((label) => (
@@ -124,29 +118,32 @@ const ProfilePage = () => {
         <div className="search-no-result-card">
           <IonIcon icon={searchOutline} />
           <p>未找到匹配结果</p>
-          <span>换个关键词试试</span>
+          <span>{searchResult?.suggestions?.length ? `试试：${searchResult.suggestions.join(' / ')}` : '换个关键词试试'}</span>
         </div>
       ) : (
         <div className="result-list">
-          {visibleResults.map((item) => (
-            <Link
-              key={item.id}
-              className="result-card"
-              to={`/detail?movie=${item.id}&from=search&q=${encodeURIComponent(activeKeyword)}`}
-              aria-label={`查看${item.title}详情`}
-            >
-              <div className={`result-poster ${item.posterTone === 'mid' ? 'mid' : ''}`} />
-              <div className="result-info">
-                <h3>{item.title}</h3>
-                <p>{item.meta}</p>
-              </div>
-              <IonIcon icon={chevronForwardOutline} />
-            </Link>
-          ))}
+          {visibleResults.map((item) => {
+            const meta = [item.originalTitle, item.year, item.countries?.[0]].filter(Boolean).join(' · ')
+            return (
+              <Link
+                key={item.mediaId}
+                className="result-card"
+                to={`/detail?movie=${item.mediaId}&from=search&q=${encodeURIComponent(activeKeyword)}`}
+                aria-label={`查看${item.title}详情`}
+              >
+                <div className={`result-poster ${getPosterTone(item.mediaId) === 'mid' ? 'mid' : ''}`} />
+                <div className="result-info">
+                  <h3>{item.title}</h3>
+                  <p>{meta}</p>
+                </div>
+                <IonIcon icon={chevronForwardOutline} />
+              </Link>
+            )
+          })}
         </div>
       )}
     </section>
   )
 }
 
-export default ProfilePage
+export default SearchPage

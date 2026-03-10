@@ -25,12 +25,15 @@ import '@rdlabo/ionic-theme-ios26/dist/css/md-remove-ios-class-effect.css'
 
 import './index.css'
 import App from './App.tsx'
+import { registerSW } from 'virtual:pwa-register'
 
 setupIonicReact({
   navAnimation: isPlatform('ios') ? iosTransitionAnimation : undefined,
   popoverEnter: isPlatform('ios') ? popoverEnterAnimation : undefined,
   popoverLeave: isPlatform('ios') ? popoverLeaveAnimation : undefined,
 })
+
+registerSW({ immediate: true })
 
 createRoot(document.getElementById('root')!).render(
   <App />,

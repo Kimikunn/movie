@@ -29,8 +29,9 @@ const writeShortReviewMap = (payload: ShortReviewMap) => {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
 }
 
-export const getShortReviewByMovie = (movieId: string): string => {
-  return readShortReviewMap()[movieId] ?? ''
+export const getShortReviewByMovie = (movieId: string): string | undefined => {
+  const reviews = readShortReviewMap()
+  return Object.prototype.hasOwnProperty.call(reviews, movieId) ? reviews[movieId] : undefined
 }
 
 export const setShortReviewByMovie = (movieId: string, review: string) => {

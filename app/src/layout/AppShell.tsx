@@ -10,6 +10,7 @@ import {
 import { useEffect, useRef } from 'react'
 import type { CSSProperties } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import PwaInstallBanner from '../components/PwaInstallBanner'
 
 const navItems = [
   { to: '/home', icon: homeOutline, label: '首页', kind: 'default' },
@@ -33,19 +34,21 @@ const AppShell = () => {
       if (from === 'records' || from === 'dashboard' || from === 'records-month' || from === 'records-week') {
         return 2
       }
-      if (from === 'create' || from === 'profile' || from === 'search') {
+      if (from === 'create' || from === 'search') {
         return 1
       }
       return 0
     }
 
-    if (location.pathname === '/search' || location.pathname === '/profile' || location.pathname === '/create') {
+    if (location.pathname === '/search' || location.pathname === '/create') {
       return 1
     }
 
     return 0
   })()
   const safeActiveIndex = activeIndex >= 0 ? activeIndex : 0
+  const shouldShowInstallBanner =
+    location.pathname === '/home' || location.pathname === '/search' || location.pathname === '/records'
 
   useEffect(() => {
     contentRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' })
@@ -64,6 +67,7 @@ const AppShell = () => {
         </header>
 
         <main ref={contentRef} className="app-content with-tab">
+          {shouldShowInstallBanner ? <PwaInstallBanner /> : null}
           <Outlet />
         </main>
 

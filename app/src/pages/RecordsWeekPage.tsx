@@ -1,26 +1,20 @@
+import { useCallback } from 'react'
 import { IonIcon } from '@ionic/react'
 import { chevronBackOutline, chevronForwardOutline, shareSocialOutline } from 'ionicons/icons'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import PageState from '../components/PageState'
+import { fetchWeekRecordsResponse, getPosterTone, resolveMockScenario } from '../data/mockMediaApi'
+import { useAsyncData } from '../hooks/useAsyncData'
 
-const dailyLogs = [
-  { week: '周一', date: '02/24', total: '无观看', items: [] },
-  {
-    week: '周二',
-    date: '02/25',
-    total: '1.8h 总时长',
-    items: [
-      { id: 'dune-2', title: '沙丘 2', meta: '106m · 9.2', tone: 'dark' },
-      { id: 'anatomy-of-a-fall', title: '坠落的审判', meta: '51m · 9.0', tone: 'charcoal' },
-    ],
-  },
-  { week: '周三', date: '02/26', total: '无观看', items: [] },
-  { week: '周四', date: '02/27', total: '无观看', items: [] },
-  { week: '周五', date: '02/28', total: '无观看', items: [] },
-  { week: '周六', date: '03/01', total: '无观看', items: [] },
-  { week: '周日', date: '03/02', total: '无观看', items: [] },
-]
+const weekdayFormatter = new Intl.DateTimeFormat('zh-CN', { weekday: 'short' })
 
 const RecordsWeekPage = () => {
+  const [searchParams] = useSearchParams()
+  const scenario = resolveMockScenario(searchParams.get('mock'))
+  const loadWeekData = useCallback(() => fetchWeekRecordsResponse(scenario), [scenario])
+  const { data: weekData, loading, error, reload } = useAsyncData(`records:week:${scenario}`, loadWeekData)
+  const isEmpty = !loading && !error && weekData !== null && weekData.overview.watchedMoviesCount === 0 && weekData.dailyRecords.every((item) => item.items.length === 0)
+
   return (
     <section className="stats-page week-detail-page">
       <header className="stats-detail-nav">
@@ -28,7 +22,7 @@ const RecordsWeekPage = () => {
           <IonIcon icon={chevronBackOutline} />
           <span>2月总览</span>
         </Link>
-        <button className="icon-btn muted" type="button" aria-label="分享周报告">
+        <button className="icon-btn muted" type="button" aria-label="分享周报">
           <IonIcon icon={shareSocialOutline} />
         </button>
       </header>
@@ -45,62 +39,72 @@ const RecordsWeekPage = () => {
         </button>
       </div>
 
-      <article className="hero-metric">
-        <p className="hero-label">WEEK 02/24-03/02</p>
-        <div className="hero-row">
-          <div className="hero-primary">
-            <p className="hero-main">2</p>
-            <p className="hero-sub-label">已看电影</p>
-          </div>
-          <div className="hero-secondary">
-            <p className="hero-sub">5.3h</p>
-            <p className="hero-sub-label">观影时长</p>
-          </div>
-        </div>
-      </article>
+      {loading ? (
+        <PageState tone="loading" title="正在加载周详情" description="正在读取本周概览和每日观影记录。" />
+      ) : error ? (
+        <PageState tone="error" title="周详情加载失败" description={error} actionLabel="重试" onAction={reload} />
+      ) : isEmpty ? (
+        <PageState tone="empty" title="这一周还没有观影记录" description="本周暂无记录，等你补上第一条观影后再来查看。" />
+      ) : weekData ? (
+        <>
+          <article className="hero-metric">
+            <p className="hero-label">WEEK 02/24-03/02</p>
+            <div className="hero-row">
+              <div className="hero-primary">
+                <p className="hero-main">{weekData.overview.watchedMoviesCount}</p>
+                <p className="hero-sub-label">已看影片</p>
+              </div>
+              <div className="hero-secondary">
+                <p className="hero-sub">{weekData.overview.watchDurationHours}h</p>
+                <p className="hero-sub-label">观影时长</p>
+              </div>
+            </div>
+          </article>
 
-      <div className="quick-grid">
-        <article className="quick-card">
-          <p>观影天数</p>
-          <strong className="week-quick-value">1 天</strong>
-        </article>
-        <article className="quick-card dark">
-          <p>本周影片</p>
-          <strong className="week-quick-value">2 部</strong>
-        </article>
-      </div>
-
-      <section className="week-daily-section">
-        <div className="week-day-list">
-          {dailyLogs.map((day) => (
-            <article key={`${day.week}-${day.date}`} className="week-day-card">
-              <header className="week-day-head">
-                <p>{`${day.week}  ${day.date}`}</p>
-                <span>{day.total}</span>
-              </header>
-              {day.items.length > 0 ? (
-                <div className="week-day-movie-list">
-                  {day.items.map((item) => (
-                    <Link
-                      key={item.id}
-                      className="week-day-movie-item"
-                      to={`/detail?movie=${item.id}&from=records-week`}
-                      aria-label={`查看${item.title}详情`}
-                    >
-                      <div className={`week-day-poster ${item.tone}`} aria-hidden="true" />
-                      <div className="week-day-movie-meta">
-                        <strong>{item.title}</strong>
-                        <p>{item.meta}</p>
-                      </div>
-                      <IonIcon icon={chevronForwardOutline} />
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
+          <div className="quick-grid">
+            <article className="quick-card">
+              <p>观影天数</p>
+              <strong className="week-quick-value">{weekData.overview.watchedDaysCount} 天</strong>
             </article>
-          ))}
-        </div>
-      </section>
+            <article className="quick-card dark">
+              <p>本周影片</p>
+              <strong className="week-quick-value">{weekData.overview.watchedMoviesCount} 部</strong>
+            </article>
+          </div>
+
+          <section className="week-daily-section">
+            <div className="week-day-list">
+              {weekData.dailyRecords.map((day) => (
+                <article key={day.date} className="week-day-card">
+                  <header className="week-day-head">
+                    <p>{`${weekdayFormatter.format(new Date(day.date))} ${day.date.slice(5).replace('-', '/')}`}</p>
+                    <span>{day.watchedMoviesCount > 0 ? `${day.watchDurationHours}h 总时长` : '无观看'}</span>
+                  </header>
+                  {day.items.length > 0 ? (
+                    <div className="week-day-movie-list">
+                      {day.items.map((item) => (
+                        <Link
+                          key={item.mediaId}
+                          className="week-day-movie-item"
+                          to={`/detail?movie=${item.mediaId}&from=records-week`}
+                          aria-label={`查看${item.title}详情`}
+                        >
+                          <div className={`week-day-poster ${getPosterTone(item.mediaId)}`} aria-hidden="true" />
+                          <div className="week-day-movie-meta">
+                            <strong>{item.title}</strong>
+                            <p>{`${item.runtimeMinutes}m · ${item.userScore?.toFixed(1) ?? '--'}`}</p>
+                          </div>
+                          <IonIcon icon={chevronForwardOutline} />
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          </section>
+        </>
+      ) : null}
     </section>
   )
 }

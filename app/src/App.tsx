@@ -5,9 +5,9 @@ import DashboardPage from './pages/DashboardPage'
 import HomePage from './pages/HomePage'
 import MoviesPage from './pages/MoviesPage'
 import PosterWallPreviewPage from './pages/PosterWallPreviewPage'
-import ProfilePage from './pages/ProfilePage'
 import RecordsMonthPage from './pages/RecordsMonthPage'
 import RecordsWeekPage from './pages/RecordsWeekPage'
+import SearchPage from './pages/SearchPage'
 import TabLabPage from './pages/TabLabPage'
 
 function App() {
@@ -27,8 +27,7 @@ function App() {
             <Route path="/preview/poster-wall" element={<Navigate to="/preview/poster-wall/bento" replace />} />
             <Route path="/preview/tab-lab" element={<TabLabPage />} />
             <Route path="/create" element={<Navigate to="/search" replace />} />
-            <Route path="/search" element={<ProfilePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="/" element={<Navigate to="/home" replace />} />
           </Route>
         </Routes>
